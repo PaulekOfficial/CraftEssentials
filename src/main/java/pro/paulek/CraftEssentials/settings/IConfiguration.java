@@ -1,4 +1,4 @@
-package pro.paulek.CraftEssentials.basic;
+package pro.paulek.CraftEssentials.settings;
 
 public interface IConfiguration {
 

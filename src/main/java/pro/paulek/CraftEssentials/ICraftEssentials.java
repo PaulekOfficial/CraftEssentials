@@ -2,8 +2,8 @@ package pro.paulek.CraftEssentials;
 
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import pro.paulek.CraftEssentials.basic.I18n;
-import pro.paulek.CraftEssentials.basic.IUser;
+import pro.paulek.CraftEssentials.settings.I18n;
+import pro.paulek.CraftEssentials.user.IUser;
 
 import java.util.UUID;
 
