@@ -3,8 +3,13 @@ package pro.paulek.CraftEssentials.basic;
 import org.bukkit.Location;
 
 import java.util.List;
+import java.util.Locale;
 
 public interface IUser {
+
+    Locale getLocale();
+
+    void setLocale();
 
     boolean hasPermission(String node);
 
