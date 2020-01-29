@@ -1,11 +1,11 @@
 package pro.paulek.CraftEssentials.cache;
 
-public interface ICache {
+import pro.paulek.CraftEssentials.settings.IConfiguration;
+
+public interface ICache extends IConfiguration {
 
     void load();
 
     void save();
-
-    void reload();
 
 }
