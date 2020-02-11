@@ -1,13 +1,13 @@
 package pro.paulek.CraftEssentials.cache;
 
-public interface ISimpleCache<N, T> extends ICache {
+public interface ISimpleCache<K, V> extends ICache {
 
-    void save(N n, T t);
+    void save(K n, V t);
 
-    void delete(N n);
+    void delete(K n);
 
-    void add(N n, T t);
+    void add(K n, V t);
 
-    T get(N n);
+    V get(K n);
 
 }

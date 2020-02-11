@@ -13,6 +13,11 @@
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+            <name>Insertt repo</name>
+            <id>insertt</id>
+            <url>https://repo.insertt.dev/releases/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -29,6 +34,12 @@
             <artifactId>bukkit</artifactId>
             <version>1.15.2-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+        </dependency>
+        <!-- Diorite-Configs -->
+        <dependency>
+            <groupId>org.diorite</groupId>
+            <artifactId>diorite-config-minimal</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 
