@@ -8,6 +8,16 @@
     <artifactId>CraftEssentials</artifactId>
     <version>0.1-ALPHA</version>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.build.timestamp.format>yyyy-MM-dd HH.mm</maven.build.timestamp.format>
+        <authors>[PaulekOfficial &lt;pawel.krzysztof.fortuna@outlook.com&gt;]</authors>
+        <apiVersion>1.16</apiVersion>
+        <prettyVersion>${maven.build.timestamp} by ${user.name}</prettyVersion>
+    </properties>
+
     <repositories>
         <repository>
             <id>spigot-repo</id>
@@ -18,6 +28,10 @@
             <id>insertt</id>
             <url>https://repo.insertt.dev/releases/</url>
         </repository>
+        <repository>
+            <id>aikar</id>
+            <url>https://repo.aikar.co/content/groups/aikar/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -25,14 +39,14 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.15.2-R0.1-SNAPSHOT</version>
+            <version>1.16.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!--Bukkit API-->
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.15.2-R0.1-SNAPSHOT</version>
+            <version>1.15.1-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <!-- Diorite-Configs -->
@@ -40,6 +54,12 @@
             <groupId>org.diorite</groupId>
             <artifactId>diorite-config-minimal</artifactId>
             <version>1.2</version>
+        </dependency>
+        <!-- Commands -->
+        <dependency>
+            <groupId>co.aikar</groupId>
+            <artifactId>acf-paper</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
