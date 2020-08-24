@@ -8,6 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.diorite.cfg.system.Template;
 import org.diorite.cfg.system.TemplateCreator;
 import pro.paulek.CraftEssentials.commands.Gamemode;
+import pro.paulek.CraftEssentials.data.JobQueue;
 import pro.paulek.CraftEssentials.data.UserCache;
 import pro.paulek.CraftEssentials.listeners.UserListeners;
 import pro.paulek.api.data.Cache;
@@ -35,6 +36,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
     private DataModel dataModel;
     private Database database;
 
+    private JobQueue jobQueue;
     private Cache<IUser, UUID> userCache;
 
     @Override
@@ -51,6 +53,8 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         database = initDatabase();
 
         //Init cache
+        jobQueue = new JobQueue(this);
+        jobQueue.init();
         userCache = new UserCache(this);
         userCache.init();
 

@@ -26,7 +26,7 @@ public class SQLite extends Database {
         }
 
         HikariConfig config = new HikariConfig();
-        config.setPoolName("pro/paulek/cloudlogin");
+        config.setPoolName("CraftEssentials");
         config.setDriverClassName("org.sqlite.JDBC");
         config.setJdbcUrl("jdbc:sqlite:" + databaseFile.getAbsolutePath());
         config.setConnectionTestQuery("SELECT 1");

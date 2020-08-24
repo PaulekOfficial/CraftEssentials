@@ -1,7 +1,7 @@
 package pro.paulek.api.data.cache;
 
-import pro.paulek.cloudlogin.data.Data;
-import pro.paulek.cloudlogin.data.Serializable;
+import pro.paulek.api.data.Data;
+import pro.paulek.api.data.Serializable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

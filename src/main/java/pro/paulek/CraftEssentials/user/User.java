@@ -32,13 +32,17 @@ public class User implements IUser {
     public User(UUID uuid, Locale locale) {
         this.uuid = uuid;
         this.locale = locale;
-        this.player = Bukkit.getPlayer(uuid);
         this.godMode = false;
         this.vanish = false;
         this.afk = false;
+        this.ignoredPlayers = new ArrayList<>();
+        this.player = Bukkit.getPlayer(uuid);
+        if(player == null) {
+            return;
+        }
         this.lastLoginPoint = player.getLocation();
         this.lastLocation = player.getLocation();
-        this.ignoredPlayers = new ArrayList<>();
+
     }
 
     @Override
