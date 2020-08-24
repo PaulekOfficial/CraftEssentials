@@ -1,10 +1,12 @@
 package pro.paulek.CraftEssentials.user;
 
 import jdk.internal.jline.internal.Nullable;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -13,6 +15,7 @@ public class User implements IUser {
 
     private UUID          uuid;
     private Locale        locale;
+    private long          timePlayed;
 
     @Nullable
     private Player        player;
@@ -25,6 +28,18 @@ public class User implements IUser {
     private boolean       afk;
     private ZonedDateTime aftSince;
     private List<UUID>    ignoredPlayers;
+
+    public User(UUID uuid, Locale locale) {
+        this.uuid = uuid;
+        this.locale = locale;
+        this.player = Bukkit.getPlayer(uuid);
+        this.godMode = false;
+        this.vanish = false;
+        this.afk = false;
+        this.lastLoginPoint = player.getLocation();
+        this.lastLocation = player.getLocation();
+        this.ignoredPlayers = new ArrayList<>();
+    }
 
     @Override
     public Locale getLocale() {
@@ -62,17 +77,17 @@ public class User implements IUser {
     }
 
     @Override
-    public void setLoginPoint() {
+    public void setLoginPoint(Location location) {
 
     }
 
     @Override
-    public void setLogoutPoint() {
+    public void setLogoutPoint(Location location) {
 
     }
 
     @Override
-    public void setPlayedTime() {
+    public void setPlayedTime(long time) {
 
     }
 
@@ -82,22 +97,22 @@ public class User implements IUser {
     }
 
     @Override
-    public void setLogoutLocation() {
+    public void setLogoutLocation(Location location) {
 
     }
 
     @Override
-    public void setLoginLocation() {
+    public void setLoginLocation(Location location) {
 
     }
 
     @Override
-    public void setLastLogin() {
+    public void setLastLogin(ZonedDateTime time) {
 
     }
 
     @Override
-    public void setLastQuit() {
+    public void setLastQuit(ZonedDateTime time) {
 
     }
 

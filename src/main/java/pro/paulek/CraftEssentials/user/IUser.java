@@ -2,6 +2,7 @@ package pro.paulek.CraftEssentials.user;
 
 import org.bukkit.Location;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,21 +24,21 @@ public interface IUser {
 
     void setVanished(boolean vanish);
 
-    void setLoginPoint();
+    void setLoginPoint(Location location);
 
-    void setLogoutPoint();
+    void setLogoutPoint(Location location);
 
-    void setPlayedTime();
+    void setPlayedTime(long time);
 
     long getPlayedTime();
 
-    void setLogoutLocation();
+    void setLogoutLocation(Location location);
 
-    void setLoginLocation();
+    void setLoginLocation(Location location);
 
-    void setLastLogin();
+    void setLastLogin(ZonedDateTime time);
 
-    void setLastQuit();
+    void setLastQuit(ZonedDateTime time);
 
     void setAfk(boolean set);
 

@@ -1,4 +1,4 @@
-package pro.paulek.CraftEssentials.data;
+package pro.paulek.api.data;
 
 //TODO better models
 public enum DataModel {

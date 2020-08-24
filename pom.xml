@@ -65,6 +65,12 @@
             <artifactId>acf-paper</artifactId>
             <version>0.5.0-SNAPSHOT</version>
         </dependency>
+        <!-- Database -->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>3.4.5</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -104,7 +110,7 @@
                             <artifactSet>
                                 <includes>
                                     <include>co.aikar:acf-paper</include>
-                                    <!--<include>com.zaxxer:HikariCP</include>-->
+                                    <include>com.zaxxer:HikariCP</include>
                                     <include>org.diorite:diorite-config-minimal</include>
                                 </includes>
                             </artifactSet>

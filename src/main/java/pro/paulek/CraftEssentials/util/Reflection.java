@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-public class ReflectionUtils {
+public class Reflection {
 
     //Inspired by https://github.com/rlf/bukkit-utils/blob/master/src/main/java/dk/lockfuglsang/minecraft/reflection/ReflectionUtil.java
 

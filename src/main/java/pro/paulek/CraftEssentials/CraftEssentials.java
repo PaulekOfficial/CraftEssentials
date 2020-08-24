@@ -2,26 +2,40 @@ package pro.paulek.CraftEssentials;
 
 import co.aikar.commands.PaperCommandManager;
 import com.google.common.collect.ImmutableList;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.diorite.cfg.system.Template;
 import org.diorite.cfg.system.TemplateCreator;
 import pro.paulek.CraftEssentials.commands.Gamemode;
+import pro.paulek.CraftEssentials.data.UserCache;
+import pro.paulek.CraftEssentials.listeners.UserListeners;
+import pro.paulek.api.data.Cache;
 import pro.paulek.CraftEssentials.settings.I18n;
 import pro.paulek.CraftEssentials.settings.Settings;
 import pro.paulek.CraftEssentials.user.IUser;
-import pro.paulek.CraftEssentials.util.ReflectionUtils;
+import pro.paulek.CraftEssentials.util.Reflection;
+import pro.paulek.api.data.DataModel;
+import pro.paulek.api.database.Database;
+import pro.paulek.api.database.MySQL;
+import pro.paulek.api.database.SQLite;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     private Settings settings;
     private PaperCommandManager commandManager;
+    private DataModel dataModel;
+    private Database database;
+
+    private Cache<IUser, UUID> userCache;
 
     @Override
     public void onLoad() {
@@ -30,6 +44,16 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     @Override
     public void onEnable() {
+        //Init config
+        settings = initSettings();
+
+        //Init database
+        database = initDatabase();
+
+        //Init cache
+        userCache = new UserCache(this);
+        userCache.init();
+
         //Init commands
         commandManager = new PaperCommandManager(this);
         commandManager.usePerIssuerLocale(true);
@@ -41,6 +65,9 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> {
             return ImmutableList.of("survival", "adventure", "spectator", "creative");
         });
+
+        //Init listeners
+        this.getServer().getPluginManager().registerEvents(new UserListeners(this), this);
     }
 
     @Override
@@ -52,20 +79,54 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     }
 
-    public void initDatabase() {
+    @Override
+    public DataModel getPluginDataModel() {
+        return dataModel;
+    }
 
+    private Settings initSettings() {
+        if(!this.getDataFolder().exists()){
+            this.getDataFolder().mkdir();
+        }
+        return loadConfig(new File(this.getDataFolder(), "settings.yml"), Settings.class);
+    }
+
+    @Override
+    public Database initDatabase(){
+        dataModel = DataModel.getModelByName(settings.storageType);
+        if(dataModel.equals(DataModel.MYSQL)) {
+            MySQL mySQL = new MySQL(settings.mysql);
+            mySQL.init();
+            return mySQL;
+        }
+        File databaseFile = new File(this.getDataFolder(), "database.db");
+        if(!databaseFile.exists()){
+            try {
+                databaseFile.createNewFile();
+            } catch (IOException exception){
+                exception.printStackTrace();
+            }
+        }
+        SQLite sqLite = new SQLite(databaseFile);
+        sqLite.init();
+        return sqLite;
+    }
+
+    @Override
+    public Cache<IUser, UUID> getUserCache() {
+        return userCache;
     }
 
     public IUser getUser(UUID uuid) {
-        return null;
+        return userCache.get(uuid);
     }
 
     public IUser getUser(String nick) {
-        return null;
+        return getUser(Objects.requireNonNull(Bukkit.getPlayer(nick)));
     }
 
     public IUser getUser(Player player) {
-        return null;
+        return getUser(player.getUniqueId());
     }
 
     public I18n getI18n() {
@@ -87,7 +148,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
     @SuppressWarnings("unchecked")
     public static <T> T loadConfig(File file, Class<T> implementationClass){
 
-        Constructor<T> constructor = (Constructor<T>) ReflectionUtils.getConstructor(implementationClass);
+        Constructor<T> constructor = (Constructor<T>) Reflection.getConstructor(implementationClass);
         Template<T> template = TemplateCreator.getTemplate(implementationClass);
 
         T config = null;

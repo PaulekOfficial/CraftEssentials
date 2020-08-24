@@ -1,4 +1,4 @@
-package pro.paulek.CraftEssentials.data.cache;
+package pro.paulek.api.data.cache;
 
 import pro.paulek.cloudlogin.data.Data;
 import pro.paulek.cloudlogin.data.Serializable;

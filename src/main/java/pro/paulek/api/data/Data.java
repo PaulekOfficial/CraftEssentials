@@ -1,4 +1,4 @@
-package pro.paulek.CraftEssentials.data;
+package pro.paulek.api.data;
 
 import java.util.Collection;
 
