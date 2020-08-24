@@ -9,7 +9,7 @@ public interface IUser {
 
     Locale getLocale();
 
-    void setLocale();
+    void setLocale(Locale locale);
 
     boolean hasPermission(String node);
 
@@ -43,7 +43,7 @@ public interface IUser {
 
     boolean isAfk();
 
-    void setGotMode(boolean set);
+    void setGodMode(boolean set);
 
     boolean isGodMode();
 

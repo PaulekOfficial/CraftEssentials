@@ -1,9 +1,12 @@
 package pro.paulek.CraftEssentials;
 
+import co.aikar.commands.PaperCommandManager;
+import com.google.common.collect.ImmutableList;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.diorite.cfg.system.Template;
 import org.diorite.cfg.system.TemplateCreator;
+import pro.paulek.CraftEssentials.commands.Gamemode;
 import pro.paulek.CraftEssentials.settings.I18n;
 import pro.paulek.CraftEssentials.settings.Settings;
 import pro.paulek.CraftEssentials.user.IUser;
@@ -18,6 +21,7 @@ import java.util.UUID;
 public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     private Settings settings;
+    private PaperCommandManager commandManager;
 
     @Override
     public void onLoad() {
@@ -26,7 +30,17 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     @Override
     public void onEnable() {
+        //Init commands
+        commandManager = new PaperCommandManager(this);
+        commandManager.usePerIssuerLocale(true);
+        commandManager.enableUnstableAPI("help");
+        commandManager.registerCommand(new Gamemode());
 
+
+        //Init CommandCompletions
+        commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> {
+            return ImmutableList.of("survival", "adventure", "spectator", "creative");
+        });
     }
 
     @Override

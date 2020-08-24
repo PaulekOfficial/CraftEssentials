@@ -1,10 +1,199 @@
 package pro.paulek.CraftEssentials.settings;
 
+import pro.paulek.api.ICraftEssentials;
+
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.regex.Pattern;
+
 public class I18n implements II18n {
 
+    private final static String MESSAGES_FILE_NAME = "messages";
+    private static final Pattern NO_DOUBLE_MARK = Pattern.compile("''");
 
+    private final Locale defaultLocale = Locale.getDefault();
+    private transient ResourceBundle defaultBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, Locale.ENGLISH, new UTF8PropertiesControl());
+    private final transient Map<Locale, ResourceBundle> resourceBundleMap = new HashMap<>();
+    private final transient Map<String, MessageFormat> messageFormatMap = new HashMap<>();
+    private ICraftEssentials craftEssentials;
+
+    public I18n(ICraftEssentials craftEssentials) {
+        this.craftEssentials = Objects.requireNonNull(craftEssentials);
+    }
+
+    @Override
+    public String translate(String key, Locale locale) {
+        try {
+            try {
+                if(!resourceBundleMap.containsKey(locale)) {
+                    this.loadLocale(locale.toString());
+                }
+                return resourceBundleMap.get(locale).getString(key);
+            } catch (MissingResourceException  exception) {
+                return defaultBundle.getString(key);
+            }
+        } catch (MissingResourceException exception) {
+            craftEssentials.getLogger().log(Level.WARNING, String.format("Missing translation key \"%s\" in translation file %s", exception.getKey(), locale.toString()), exception);
+        }
+        return key;
+    }
+
+    @Override
+    public ResourceBundle getResourceBundle(Locale locale) {
+        return resourceBundleMap.getOrDefault(locale, defaultBundle);
+    }
+
+    @Override
+    public ResourceBundle getDefaultBundle() {
+        return defaultBundle;
+    }
+
+    @Override
+    public Locale getDefaultLocale() {
+        return defaultLocale;
+    }
+
+    @Override
+    public String format(String message, Object... objects) {
+        if(objects.length > 0) {
+            return NO_DOUBLE_MARK.matcher(message).replaceAll("'");
+        }
+        MessageFormat messageFormat = messageFormatMap.get(message);
+        if(messageFormat == null) {
+            try {
+                messageFormat = new MessageFormat(message);
+            } catch(IllegalArgumentException exception) {
+                craftEssentials.getLogger().log(Level.SEVERE, "Invalid Translation key for '" + message + "': " + exception.getMessage());
+                message = message.replaceAll("\\{(\\D*?)\\}", "\\[$1\\]");
+                messageFormat = new MessageFormat(message);
+            }
+            messageFormatMap.put(message, messageFormat);
+        }
+        return messageFormat.format(objects).replace(' ', ' '); // replace nbsp with a space
+    }
+
+    @Override
+    public String format(String key, Locale locale, Object... objects) {
+        return format(translate(key, locale), objects);
+    }
+
+    @Override
+    public void loadLocale(final String localeName) {
+        Locale locale = null;
+        if (localeName != null && !localeName.isEmpty()) {
+            final String[] parts = localeName.split("[_\\.]");
+            if (parts.length == 1) {
+                locale = new Locale(parts[0]);
+            }
+            if (parts.length == 2) {
+                locale = new Locale(parts[0], parts[1]);
+            }
+            if (parts.length == 3) {
+                locale = new Locale(parts[0], parts[1], parts[2]);
+            }
+        }
+        craftEssentials.getLogger().log(Level.INFO, String.format("Loading locale %s", locale.toString()));
+
+        ResourceBundle resourceBundle = null;
+        try {
+            resourceBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, locale, new UTF8PropertiesControl());
+        } catch (MissingResourceException exception) {
+            craftEssentials.getLogger().log(Level.FINE, "No translations folder found in plugin file for locale: " + locale.toString(), exception);
+        }
+
+        if(resourceBundle != null) {
+            resourceBundleMap.put(locale, resourceBundle);
+        }
+
+        try {
+            resourceBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, locale, new FileResClassLoader(I18n.class.getClassLoader(), craftEssentials), new UTF8PropertiesControl());
+        } catch (MissingResourceException exception) {
+            craftEssentials.getLogger().log(Level.FINE, "No translations file found in plugin folder for locale: " + locale.toString(), exception);
+        }
+
+        if(resourceBundle != null) {
+            resourceBundleMap.put(locale, resourceBundle);
+        }
+    }
+
+    @Override
     public void reload() {
 
+    }
+
+    // <-- FROM ESSENTIALS X https://github.com/EssentialsX/Essentials/blob/d2f2140be9e2f9d75df6b910232c6df99f998318/Essentials/src/com/earth2me/essentials/I18n.java#L170 -->
+
+    /**
+     * Attempts to load properties files from the plugin directory before falling back to the jar.
+     */
+    private static class FileResClassLoader extends ClassLoader {
+        private final transient File dataFolder;
+
+        FileResClassLoader(final ClassLoader classLoader, final ICraftEssentials craftEssentials) {
+            super(classLoader);
+            this.dataFolder = craftEssentials.getDataFolder();
+        }
+
+        @Override
+        public URL getResource(final String string) {
+            final File file = new File(dataFolder, string);
+            if (file.exists()) {
+                try {
+                    return file.toURI().toURL();
+                } catch (MalformedURLException ignored) {}
+            }
+            return null;
+        }
+
+        @Override
+        public InputStream getResourceAsStream(final String string) {
+            final File file = new File(dataFolder, string);
+            if (file.exists()) {
+                try {
+                    return new FileInputStream(file);
+                } catch (FileNotFoundException ignored) {}
+            }
+            return null;
+        }
+    }
+
+    /**
+     * Reads .properties files as UTF-8 instead of ISO-8859-1, which is the default on Java 8/below.
+     * Java 9 fixes this by defaulting to UTF-8 for .properties files.
+     */
+    private static class UTF8PropertiesControl extends ResourceBundle.Control {
+        public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload) throws IOException {
+            String resourceName = toResourceName(toBundleName(baseName, locale), "properties");
+            ResourceBundle bundle = null;
+            InputStream stream = null;
+            if (reload) {
+                URL url = loader.getResource(resourceName);
+                if (url != null) {
+                    URLConnection connection = url.openConnection();
+                    if (connection != null) {
+                        connection.setUseCaches(false);
+                        stream = connection.getInputStream();
+                    }
+                }
+            } else {
+                stream = loader.getResourceAsStream(resourceName);
+            }
+            if (stream != null) {
+                try {
+                    // use UTF-8 here, this is the important bit
+                    bundle = new PropertyResourceBundle(new InputStreamReader(stream, StandardCharsets.UTF_8));
+                } finally {
+                    stream.close();
+                }
+            }
+            return bundle;
+        }
     }
 
 }
