@@ -7,11 +7,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import pro.paulek.CraftEssentials.ICraftEssentials;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @CommandAlias("gamemode|gm")
 @CommandPermission("craftessentials.gamemode")
@@ -27,6 +25,12 @@ public class Gamemode extends BaseCommand {
             .put("a", GameMode.ADVENTURE)
             .put("spec", GameMode.SPECTATOR)
             .build();
+
+    private ICraftEssentials plugin;
+
+    public Gamemode(ICraftEssentials craftEssentials) {
+        this.plugin = Objects.requireNonNull(craftEssentials);
+    }
 
     @Default
     @Syntax("[creative/spectator/adventure/survival] <+player>")
@@ -68,7 +72,7 @@ public class Gamemode extends BaseCommand {
         }
         if(args.length == 1 && player != null) {
             player.setGameMode(targetGamemode);
-            player.sendMessage("Your gamemode has changed to " + targetGamemode.name());
+            player.sendMessage(plugin.getI18n().format("gamemodeChanged", plugin.getUser(player.getUniqueId()).getLocale(), targetGamemode.name()));
             return;
         }
         if(args.length < 2 && player == null) {

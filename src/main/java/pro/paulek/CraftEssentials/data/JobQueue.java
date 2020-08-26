@@ -31,6 +31,9 @@ public class JobQueue implements Runnable {
 
     @Override
     public void run() {
+        if(jobs.isEmpty()) {
+            return;
+        }
         if(jobs.getFirst().run() == -1) {
             return;
         }

@@ -11,6 +11,7 @@ import pro.paulek.CraftEssentials.commands.Gamemode;
 import pro.paulek.CraftEssentials.data.JobQueue;
 import pro.paulek.CraftEssentials.data.UserCache;
 import pro.paulek.CraftEssentials.listeners.UserListeners;
+import pro.paulek.CraftEssentials.settings.II18n;
 import pro.paulek.api.data.Cache;
 import pro.paulek.CraftEssentials.settings.I18n;
 import pro.paulek.CraftEssentials.settings.Settings;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -32,6 +34,7 @@ import java.util.UUID;
 public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     private Settings settings;
+    private II18n i18n;
     private PaperCommandManager commandManager;
     private DataModel dataModel;
     private Database database;
@@ -49,6 +52,10 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         //Init config
         settings = initSettings();
 
+        //Init i18n
+        i18n = new I18n(this);
+        i18n.loadLocale("en");
+
         //Init database
         database = initDatabase();
 
@@ -62,7 +69,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         commandManager = new PaperCommandManager(this);
         commandManager.usePerIssuerLocale(true);
         commandManager.enableUnstableAPI("help");
-        commandManager.registerCommand(new Gamemode());
+        commandManager.registerCommand(new Gamemode(this));
 
 
         //Init CommandCompletions
@@ -133,8 +140,8 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         return getUser(player.getUniqueId());
     }
 
-    public I18n getI18n() {
-        return null;
+    public II18n getI18n() {
+        return i18n;
     }
 
     public int scheduleSyncDelayedTask(Runnable run) {
@@ -183,5 +190,8 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         return config;
     }
 
-
+    @Override
+    public JobQueue getJobs() {
+        return jobQueue;
+    }
 }

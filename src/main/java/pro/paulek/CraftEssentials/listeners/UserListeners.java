@@ -41,11 +41,23 @@ public class UserListeners implements Listener {
             if(user != null) {
                 return;
             }
-            user = new User(uuid, Locale.forLanguageTag(event.getPlayer().getLocale().substring(0, 2)));
+            String localeString = event.getPlayer().getLocale();
+            Locale locale = null;
+            if (!localeString.isEmpty()) {
+                final String[] parts = localeString.split("[_\\.]");
+                if (parts.length == 1) {
+                    locale = new Locale(parts[0]);
+                }
+                if (parts.length == 2) {
+                    locale = new Locale(parts[0], parts[1]);
+                }
+                if (parts.length == 3) {
+                    locale = new Locale(parts[0], parts[1], parts[2]);
+                }
+            }
+            user = new User(uuid, locale);
             plugin.getUserCache().add(uuid, user);
             plugin.getUserCache().save(uuid, user);
-            Bukkit.broadcastMessage(user.getLocale().getLanguage());
-            Bukkit.broadcastMessage(event.getPlayer().getLocale());
         }, 100);
 
     }

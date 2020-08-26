@@ -56,4 +56,10 @@ public interface II18n extends IConfiguration {
      */
     void loadLocale(String path);
 
+    /**
+     * Creates new messages file translated in target locale
+     * @param locale
+     */
+    void translateLocale(Locale locale);
+
 }

@@ -1,6 +1,5 @@
 package pro.paulek.CraftEssentials.user;
 
-import jdk.internal.jline.internal.Nullable;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,8 +15,6 @@ public class User implements IUser {
     private UUID          uuid;
     private Locale        locale;
     private long          timePlayed;
-
-    @Nullable
     private Player        player;
 
     private boolean       godMode;
