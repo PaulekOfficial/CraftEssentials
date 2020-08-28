@@ -1,5 +1,6 @@
 package pro.paulek.CraftEssentials.settings;
 
+import org.bukkit.ChatColor;
 import pro.paulek.CraftEssentials.objects.Job;
 import pro.paulek.CraftEssentials.ICraftEssentials;
 import pro.paulek.CraftEssentials.util.AzureTranslator;
@@ -28,6 +29,8 @@ public class I18n implements II18n {
     private final transient Map<String, MessageFormat> messageFormatMap = new HashMap<>();
     private ICraftEssentials craftEssentials;
 
+    private List<Locale> languagesInTranslations = new ArrayList<>();
+
     public I18n(ICraftEssentials craftEssentials) {
         this.craftEssentials = Objects.requireNonNull(craftEssentials);
     }
@@ -39,7 +42,7 @@ public class I18n implements II18n {
                 if(!resourceBundleMap.containsKey(locale)) {
                     this.loadLocale(locale.toString());
                 }
-                if(!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage())) {
+                if(!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage()) && !languagesInTranslations.contains(locale)) {
                     Job<Runnable> job = new Job<>(new Runnable() {
                         @Override
                         public void run() {
@@ -48,9 +51,9 @@ public class I18n implements II18n {
                     }, true, craftEssentials);
                     craftEssentials.getJobs().add(job);
                 }
-                return resourceBundleMap.get(locale).getString(key);
+                return fixColor(resourceBundleMap.get(locale).getString(key));
             } catch (MissingResourceException exception) {
-                return defaultBundle.getString(key);
+                return fixColor(defaultBundle.getString(key));
             }
         } catch (MissingResourceException exception) {
             craftEssentials.getLogger().log(Level.WARNING, String.format("Missing translation key \"%s\" in translation file %s", exception.getKey(), locale.toString()), exception);
@@ -61,6 +64,7 @@ public class I18n implements II18n {
     @Override
     public void translateLocale(Locale locale) {
         craftEssentials.getLogger().log(Level.INFO, String.format("Prepare to create translation file %s", locale.toString()));
+        languagesInTranslations.add(locale);
         File file = new File(craftEssentials.getDataFolder(), "messages_" + locale.getLanguage() + ".properties");
 
         try {
@@ -83,7 +87,7 @@ public class I18n implements II18n {
 
         int i = 0;
         for(String key : toBeTranslated.keySet()) {
-            properties.put(key, translations.get(i));
+            properties.put(key, translations.get(i).getText());
             i++;
         }
 
@@ -93,6 +97,7 @@ public class I18n implements II18n {
             craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
         }
 
+        languagesInTranslations.remove(locale);
         craftEssentials.getLogger().log(Level.INFO, String.format("Finished creating translation file %s", locale.toString()));
 
         this.loadLocale(locale.toString());
@@ -178,6 +183,10 @@ public class I18n implements II18n {
             resourceBundleMap.put(locale, resourceBundle);
         }
 
+    }
+
+    private String fixColor(String message) {
+        return ChatColor.translateAlternateColorCodes('&', message);
     }
 
     @Override

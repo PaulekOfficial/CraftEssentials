@@ -70,9 +70,10 @@ public class Gamemode extends BaseCommand {
         if(commandSender instanceof Player) {
             player = (Player) commandSender;
         }
+        Locale locale = plugin.getUser(player.getUniqueId()).getLocale();
         if(args.length == 1 && player != null) {
             player.setGameMode(targetGamemode);
-            player.sendMessage(plugin.getI18n().format("gamemodeChanged", plugin.getUser(player.getUniqueId()).getLocale(), targetGamemode.name()));
+            player.sendMessage(plugin.getI18n().format("gamemodeChanged", locale, plugin.getI18n().translate(targetGamemode.name(), locale)));
             return;
         }
         if(args.length < 2 && player == null) {
@@ -103,7 +104,8 @@ public class Gamemode extends BaseCommand {
                 continue;
             }
             player1.setGameMode(targetGamemode);
-            player1.sendMessage("Your gamemode has changed to " + targetGamemode.name());
+            Locale locale1 = plugin.getUser(player1.getUniqueId()).getLocale();
+            player1.sendMessage(plugin.getI18n().format("gamemodeChanged", locale1, plugin.getI18n().translate(targetGamemode.name(), locale1)));
         }
         player.sendMessage("Gamemode changed.");
     }
