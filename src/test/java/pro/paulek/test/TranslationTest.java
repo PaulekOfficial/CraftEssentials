@@ -1,19 +1,26 @@
 package pro.paulek.test;
 
-import com.google.cloud.translate.*;
 import org.junit.Assert;
 import org.junit.Test;
+import pro.paulek.CraftEssentials.util.AzureTranslator;
+import pro.paulek.CraftEssentials.util.Translator;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class TranslationTest {
 
     @Test
-    public void translate() {
-        System.setProperty("GOOGLE_APPLICATION_CREDENTIALS", "e4df72019af1e8444214972c5765cb438bc73f09");
-        Translate translate = TranslateOptions.getDefaultInstance().getService();
+    public void testAzure() {
+        Translator translator = new AzureTranslator("https://api.cognitive.microsofttranslator.com", "f30afa09c06a42609c9c82aeb8eba77f");
 
-        Translation translation = translate.translate("Hello, world!", Translate.TranslateOption.targetLanguage("DE"));
+        List<Translator.Translation> translations = translator.translate(Locale.GERMANY,"Hello, world!", "Day");
 
-        if(!translation.getTranslatedText().equalsIgnoreCase("Hallo Welt!")) {
+        Logger.getGlobal().log(Level.INFO, "Translation result: %s", translations.get(0).getTranslated());
+
+        if(!translations.get(0).getTranslated().equalsIgnoreCase("Hallo Welt!")) {
             Assert.fail("Incorrect translation");
         }
 

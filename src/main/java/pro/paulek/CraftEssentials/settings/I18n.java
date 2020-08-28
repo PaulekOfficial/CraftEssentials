@@ -1,13 +1,6 @@
 package pro.paulek.CraftEssentials.settings;
 
-import com.google.cloud.translate.Translate;
-import com.google.cloud.translate.TranslateOptions;
-import com.google.cloud.translate.Translation;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import org.bukkit.Bukkit;
 import pro.paulek.CraftEssentials.objects.Job;
-import pro.paulek.CraftEssentials.util.Translator;
 import pro.paulek.CraftEssentials.ICraftEssentials;
 
 import java.io.*;
@@ -21,8 +14,6 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class I18n implements II18n {
-
-    Translate translate = TranslateOptions.getDefaultInstance().getService();
 
     private final static String MESSAGES_FILE_NAME = "messages";
     private static final Pattern NO_DOUBLE_MARK = Pattern.compile("''");
@@ -82,22 +73,13 @@ public class I18n implements II18n {
             toBeTranslated.put(key, defaultBundle.getString(key));
         }
 
-        List<Translation> translations = translate.translate(new LinkedList<>(toBeTranslated.values()), Translate.TranslateOption.targetLanguage(locale.getLanguage()));
 
-        Properties properties = new Properties();
 
-        int i = 0;
-        for(String key : toBeTranslated.keySet()) {
-            Translation translation = translations.get(i);
-            properties.put(key, translation.getTranslatedText());
-            i++;
-        }
-
-        try(FileOutputStream fileInputStream = new FileOutputStream(file); Writer writer = new OutputStreamWriter(fileInputStream, StandardCharsets.UTF_8)) {
-            properties.store(writer, "");
-        } catch (IOException exception) {
-            craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
-        }
+//        try(FileOutputStream fileInputStream = new FileOutputStream(file); Writer writer = new OutputStreamWriter(fileInputStream, StandardCharsets.UTF_8)) {
+//            properties.store(writer, "");
+//        } catch (IOException exception) {
+//            craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
+//        }
 
         craftEssentials.getLogger().log(Level.INFO, String.format("Finished creating translation file %s", locale.toString()));
 
