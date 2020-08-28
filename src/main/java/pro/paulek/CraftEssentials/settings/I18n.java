@@ -2,6 +2,8 @@ package pro.paulek.CraftEssentials.settings;
 
 import pro.paulek.CraftEssentials.objects.Job;
 import pro.paulek.CraftEssentials.ICraftEssentials;
+import pro.paulek.CraftEssentials.util.AzureTranslator;
+import pro.paulek.CraftEssentials.util.Translator;
 
 import java.io.*;
 import java.net.MalformedURLException;
@@ -14,6 +16,8 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 public class I18n implements II18n {
+
+    private final Translator translator = new AzureTranslator("https://api.cognitive.microsofttranslator.com", "f30afa09c06a42609c9c82aeb8eba77f");
 
     private final static String MESSAGES_FILE_NAME = "messages";
     private static final Pattern NO_DOUBLE_MARK = Pattern.compile("''");
@@ -73,13 +77,21 @@ public class I18n implements II18n {
             toBeTranslated.put(key, defaultBundle.getString(key));
         }
 
+        List<Translator.Translation> translations = translator.translate(locale, toBeTranslated.values().toArray(new String[]{}));
 
+        Properties properties = new Properties();
 
-//        try(FileOutputStream fileInputStream = new FileOutputStream(file); Writer writer = new OutputStreamWriter(fileInputStream, StandardCharsets.UTF_8)) {
-//            properties.store(writer, "");
-//        } catch (IOException exception) {
-//            craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
-//        }
+        int i = 0;
+        for(String key : toBeTranslated.keySet()) {
+            properties.put(key, translations.get(i));
+            i++;
+        }
+
+        try(FileOutputStream fileInputStream = new FileOutputStream(file); Writer writer = new OutputStreamWriter(fileInputStream, StandardCharsets.UTF_8)) {
+            properties.store(writer, "");
+        } catch (IOException exception) {
+            craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
+        }
 
         craftEssentials.getLogger().log(Level.INFO, String.format("Finished creating translation file %s", locale.toString()));
 
