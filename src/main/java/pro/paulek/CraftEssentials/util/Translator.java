@@ -2,6 +2,7 @@ package pro.paulek.CraftEssentials.util;
 
 
 import com.google.gson.Gson;
+import org.apache.commons.lang.StringEscapeUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -14,20 +15,33 @@ public interface Translator {
 
     class Translation {
 
-        private String text;
-        private String to;
+        private String message;
+        private String language;
 
-        public Translation(String text, String to) {
-            this.text = text;
-            this.to = to;
+        public Translation(String message, String language) {
+            this.message = message;
+            this.language = language;
         }
 
-        public String getText() {
-            return text;
+        public Translation(AzureTranslator.AzureTranslation azureTranslation) {
+            this.message = StringEscapeUtils.unescapeJava(azureTranslation.getText()).replaceAll("<div>", "").replaceAll("</div>", "").replaceAll("<div class=\"notranslate\">", "");
+            this.language = azureTranslation.getTo();
         }
 
-        public String getTo() {
-            return to;
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public void setLanguage(String language) {
+            this.language = language;
         }
 
         @Override
@@ -35,5 +49,7 @@ public interface Translator {
             return new Gson().toJson(this);
         }
     }
+
+    String ignoreColorCodesInTranslation(String message);
 
 }

@@ -70,15 +70,17 @@ public class I18n implements II18n {
         try {
             if (!file.createNewFile()) {
                 craftEssentials.getLogger().log(Level.WARNING, String.format("Fail to create new translation file %s, writable: %s", locale.toString(), file.canWrite()));
+                return;
             }
         } catch (IOException exception) {
             craftEssentials.getLogger().log(Level.WARNING, String.format("Critical fail to create new translation file %s", locale.toString()), exception);
+            return;
         }
 
         Map<String,String> toBeTranslated = new LinkedHashMap<>();
 
         for(String key : defaultBundle.keySet()) {
-            toBeTranslated.put(key, defaultBundle.getString(key));
+            toBeTranslated.put(key, translator.ignoreColorCodesInTranslation(defaultBundle.getString(key)));
         }
 
         List<Translator.Translation> translations = translator.translate(locale, toBeTranslated.values().toArray(new String[]{}));
@@ -87,7 +89,7 @@ public class I18n implements II18n {
 
         int i = 0;
         for(String key : toBeTranslated.keySet()) {
-            properties.put(key, translations.get(i).getText());
+            properties.put(key, translations.get(i).getMessage());
             i++;
         }
 
@@ -95,6 +97,7 @@ public class I18n implements II18n {
             properties.store(writer, "");
         } catch (IOException exception) {
             craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
+            return;
         }
 
         languagesInTranslations.remove(locale);
@@ -119,27 +122,20 @@ public class I18n implements II18n {
     }
 
     @Override
-    public String format(String message, Object... objects) {
-        if(objects.length > 0) {
-            return NO_DOUBLE_MARK.matcher(message).replaceAll("'");
-        }
-        MessageFormat messageFormat = messageFormatMap.get(message);
-        if(messageFormat == null) {
+    public String format(final String key, Locale locale, Object... objects) {
+        String format = translate(key, locale);
+        MessageFormat messageFormat = messageFormatMap.get(format);
+        if (messageFormat == null) {
             try {
-                messageFormat = new MessageFormat(message);
-            } catch(IllegalArgumentException exception) {
-                craftEssentials.getLogger().log(Level.SEVERE, "Invalid Translation key for '" + message + "': " + exception.getMessage());
-                message = message.replaceAll("\\{(\\D*?)\\}", "\\[$1\\]");
-                messageFormat = new MessageFormat(message);
+                messageFormat = new MessageFormat(format);
+            } catch (IllegalArgumentException e) {
+                craftEssentials.getLogger().log(Level.WARNING, "Invalid Translation key for '" + key + "': " + e.getMessage());
+                format = format.replaceAll("\\{(\\D*?)\\}", "\\[$1\\]");
+                messageFormat = new MessageFormat(format);
             }
-            messageFormatMap.put(message, messageFormat);
+            messageFormatMap.put(format, messageFormat);
         }
         return messageFormat.format(objects).replace(' ', ' '); // replace nbsp with a space
-    }
-
-    @Override
-    public String format(String key, Locale locale, Object... objects) {
-        return format(translate(key, locale), objects);
     }
 
     @Override

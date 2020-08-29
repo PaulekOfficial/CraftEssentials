@@ -32,13 +32,13 @@ public interface II18n extends IConfiguration {
      */
     Locale getDefaultLocale();
 
-    /**
-     * Formats provide the message according to the plugin settings, and add values ​​to the message
-     * @param message Message to format
-     * @param objects Objects to replace args {0}, {1} etc.
-     * @return Formatted message
-     */
-    String format(String message, Object... objects);
+//    /**
+//     * Formats provide the message according to the plugin settings, and add values ​​to the message
+//     * @param message Message to format
+//     * @param objects Objects to replace args {0}, {1} etc.
+//     * @return Formatted message
+//     */
+//    String format(String message, Object... objects);
 
     /**
      * Loads the message in the appropriate language and formats, give the message according to the plugin settings, and adds values ​​to the message

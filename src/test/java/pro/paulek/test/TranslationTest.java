@@ -1,5 +1,6 @@
 package pro.paulek.test;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import pro.paulek.CraftEssentials.util.AzureTranslator;
@@ -20,8 +21,8 @@ public class TranslationTest {
 
         Logger.getGlobal().log(Level.INFO, "Translation result: " + translation);
 
-        if(!translation.getText().equalsIgnoreCase("Hallo Welt!")) {
-            Assert.fail("Incorrect translation, expected Hallo Welt!, get: " + translation.getText());
+        if(!translation.getMessage().equalsIgnoreCase("Hallo Welt!")) {
+            Assert.fail("Incorrect translation, expected Hallo Welt!, get: " + translation.getMessage());
         }
 
     }
@@ -32,13 +33,30 @@ public class TranslationTest {
 
         Logger.getGlobal().log(Level.INFO, "Translation result: " + translations.toString());
 
-        if(!translations.get(0).getText().equalsIgnoreCase("Hallo Welt!")) {
-            Assert.fail("Incorrect translation, expected Hallo Welt!, get: " + translations.get(0).getText());
+        if(!translations.get(0).getMessage().equalsIgnoreCase("Hallo Welt!")) {
+            Assert.fail("Incorrect translation, expected Hallo Welt!, get: " + translations.get(0).getMessage());
         }
-        if(!translations.get(1).getText().equalsIgnoreCase("Tag")) {
-            Assert.fail("Incorrect translation, expected Tag, get: " + translations.get(1).getText());
+        if(!translations.get(1).getMessage().equalsIgnoreCase("Tag")) {
+            Assert.fail("Incorrect translation, expected Tag, get: " + translations.get(1).getMessage());
         }
 
+    }
+
+    @Test
+    public void ignore3ColorsTest() {
+        String text = "&cHere are &bcolors";
+        String res = translator.ignoreColorCodesInTranslation(text);
+        Logger.getGlobal().log(Level.INFO, res);
+        if(!res.equals("<div><div></div><div class=\"notranslate\">&c</div><div>Here are </div><div class=\"notranslate\">&b</div><div>colors</div></div>")) {
+            Assert.fail("Incorrect color code format, expected \"<div><div></div><div class=\"notranslate\">&c</div><div>Here are </div><div class=\"notranslate\">&b</div><div>colors</div></div>\", get: " + res);
+        }
+        Translator.Translation translation = translator.translate(Locale.GERMANY, res);
+
+        Logger.getGlobal().log(Level.INFO, "Translation result: " + translation.getMessage());
+
+        if(!translation.getMessage().equals("&cHier sind &bFarben")) {
+            Assert.fail("Incorrect color code format, expected \"&cHier sind &bFarben\", get: " + translation);
+        }
     }
 
 }
