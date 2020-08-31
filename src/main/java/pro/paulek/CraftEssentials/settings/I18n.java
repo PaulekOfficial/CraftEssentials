@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import pro.paulek.CraftEssentials.objects.Job;
 import pro.paulek.CraftEssentials.ICraftEssentials;
 import pro.paulek.CraftEssentials.util.AzureTranslator;
+import pro.paulek.CraftEssentials.util.LocationAndLocale;
 import pro.paulek.CraftEssentials.util.Translator;
 
 import java.io.*;
@@ -40,16 +41,7 @@ public class I18n implements II18n {
         try {
             try {
                 if(!resourceBundleMap.containsKey(locale)) {
-                    this.loadLocale(locale.toString());
-                }
-                if(!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage()) && !languagesInTranslations.contains(locale)) {
-                    Job<Runnable> job = new Job<>(new Runnable() {
-                        @Override
-                        public void run() {
-                            craftEssentials.getI18n().translateLocale(locale);
-                        }
-                    }, true, craftEssentials);
-                    craftEssentials.getJobs().add(job);
+                    this.loadOrTranslate(locale);
                 }
                 return fixColor(resourceBundleMap.get(locale).getString(key));
             } catch (MissingResourceException exception) {
@@ -59,6 +51,22 @@ public class I18n implements II18n {
             craftEssentials.getLogger().log(Level.WARNING, String.format("Missing translation key \"%s\" in translation file %s", exception.getKey(), locale.toString()), exception);
         }
         return key;
+    }
+
+    @Override
+    public void loadOrTranslate(Locale locale) {
+        Job<Runnable> job = new Job<>(new Runnable() {
+            @Override
+            public void run() {
+                if(resourceBundleMap.get(locale) == null) {
+                    craftEssentials.getI18n().loadLocale(locale.toString());
+                }
+                if(!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage())) {
+                    craftEssentials.getI18n().translateLocale(locale);
+                }
+            }
+        }, true, craftEssentials);
+        craftEssentials.getJobs().add(job);
     }
 
     @Override
@@ -140,19 +148,7 @@ public class I18n implements II18n {
 
     @Override
     public void loadLocale(final String localeName) {
-        Locale locale = null;
-        if (localeName != null && !localeName.isEmpty()) {
-            final String[] parts = localeName.split("[_\\.]");
-            if (parts.length == 1) {
-                locale = new Locale(parts[0]);
-            }
-            if (parts.length == 2) {
-                locale = new Locale(parts[0], parts[1]);
-            }
-            if (parts.length == 3) {
-                locale = new Locale(parts[0], parts[1], parts[2]);
-            }
-        }
+        Locale locale = LocationAndLocale.localeFromTag(localeName);
         craftEssentials.getLogger().log(Level.INFO, String.format("Loading locale %s", locale));
 
         ResourceBundle resourceBundle = null;

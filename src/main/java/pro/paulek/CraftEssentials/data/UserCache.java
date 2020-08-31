@@ -42,6 +42,7 @@ public class UserCache implements Cache<IUser, UUID> {
     @Override
     public void add(UUID uuid, IUser iUser) {
         userMap.put(uuid, iUser);
+        this.save(uuid);
     }
 
     @Override

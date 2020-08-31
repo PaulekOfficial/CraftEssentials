@@ -62,4 +62,11 @@ public interface II18n extends IConfiguration {
      */
     void translateLocale(Locale locale);
 
+    /**
+     * Loades lang or loades and translates
+     * @param locale
+     */
+    void loadOrTranslate(Locale locale);
+
+
 }

@@ -39,6 +39,59 @@
     </repositories>
 
     <dependencies>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.maxmind.db</groupId>
+            <artifactId>maxmind-db</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.12</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.4.13</version>
+        </dependency>
+        <dependency>
+            <!-- httpclient pulls this in. We pull in a newer version
+            because of a security issue in 1.11 -->
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.14</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.11.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.11.2</version>
+        </dependency>
+        <!--GEO IP2-->
+        <dependency>
+            <groupId>com.maxmind.geoip2</groupId>
+            <artifactId>geoip2</artifactId>
+            <version>2.14.0</version>
+        </dependency>
         <!--JUnit Test-->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -113,19 +166,34 @@
                             <relocations>
                                 <relocation>
                                     <pattern>co.aikar.commands</pattern>
-                                    <shadedPattern>pro.paulek.clans.acf</shadedPattern>
+                                    <shadedPattern>pro.paulek.api.acf</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>co.aikar.locales</pattern>
-                                    <shadedPattern>pro.paulek.clans.locales</shadedPattern>
+                                    <shadedPattern>pro.paulek.api.locales</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson</pattern>
+                                    <shadedPattern>pro.paulek.api.jackson</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>org.apache</pattern>
+                                    <shadedPattern>pro.paulek.api.apache</shadedPattern>
                                 </relocation>
                             </relocations>
                             <artifactSet>
                                 <includes>
-                                    <include>com.google.cloud:google-cloud-translate</include>
                                     <include>co.aikar:acf-paper</include>
                                     <include>com.zaxxer:HikariCP</include>
                                     <include>org.diorite:diorite-config-minimal</include>
+                                    <include>com.maxmind.geoip2:geoip2</include>
+                                    <include>com.fasterxml.jackson.core:*</include>
+                                    <include>org.apache.httpcomponents:httpclient</include>
+                                    <include>org.apache.httpcomponents:httpcore</include>
+                                    <include>commons-codec:commons-codec</include>
+                                    <include>commons-logging:commons-logging</include>
+                                    <include>com.maxmind.db:maxmind-db</include>
+                                    <include>commons-lang:commons-lang</include>
                                 </includes>
                             </artifactSet>
                         </configuration>
@@ -140,8 +208,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.0</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
             <plugin>
