@@ -1,7 +1,7 @@
 package pro.paulek.CraftEssentials.settings;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import pro.paulek.CraftEssentials.objects.Job;
 import pro.paulek.CraftEssentials.ICraftEssentials;
 import pro.paulek.CraftEssentials.util.AzureTranslator;
 import pro.paulek.CraftEssentials.util.LocationAndLocale;
@@ -25,12 +25,12 @@ public class I18n implements II18n {
     private static final Pattern NO_DOUBLE_MARK = Pattern.compile("''");
 
     private final Locale defaultLocale = Locale.ENGLISH;
-    private transient ResourceBundle defaultBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, Locale.ENGLISH, new UTF8PropertiesControl());
+    private final transient ResourceBundle defaultBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, Locale.ENGLISH, new UTF8PropertiesControl());
     private final transient Map<Locale, ResourceBundle> resourceBundleMap = new HashMap<>();
     private final transient Map<String, MessageFormat> messageFormatMap = new HashMap<>();
-    private ICraftEssentials craftEssentials;
+    private final ICraftEssentials craftEssentials;
 
-    private List<Locale> languagesInTranslations = new ArrayList<>();
+    private final List<Locale> languagesInTranslations = new ArrayList<>();
 
     public I18n(ICraftEssentials craftEssentials) {
         this.craftEssentials = Objects.requireNonNull(craftEssentials);
@@ -55,22 +55,22 @@ public class I18n implements II18n {
 
     @Override
     public void loadOrTranslate(Locale locale) {
-        Job<Runnable> job = new Job<>(new Runnable() {
-            @Override
-            public void run() {
-                if(resourceBundleMap.get(locale) == null) {
-                    craftEssentials.getI18n().loadLocale(locale.toString());
-                }
-                if(!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage())) {
-                    craftEssentials.getI18n().translateLocale(locale);
-                }
+        Bukkit.getScheduler().runTaskAsynchronously(craftEssentials, run -> {
+            if (resourceBundleMap.get(locale) == null) {
+                craftEssentials.getI18n().loadLocale(locale.toString());
             }
-        }, true, craftEssentials);
-        craftEssentials.getJobs().add(job);
+            if (!resourceBundleMap.get(locale).getLocale().getLanguage().equalsIgnoreCase(locale.getLanguage())) {
+                craftEssentials.getI18n().translateLocale(locale);
+            }
+        });
     }
 
     @Override
     public void translateLocale(Locale locale) {
+        if (!craftEssentials.getSettings().useTranslator) {
+            resourceBundleMap.put(locale, defaultBundle);
+            return;
+        }
         craftEssentials.getLogger().log(Level.INFO, String.format("Prepare to create translation file %s", locale.toString()));
         languagesInTranslations.add(locale);
         File file = new File(craftEssentials.getDataFolder(), "messages_" + locale.getLanguage() + ".properties");
@@ -81,7 +81,7 @@ public class I18n implements II18n {
                 return;
             }
         } catch (IOException exception) {
-            craftEssentials.getLogger().log(Level.WARNING, String.format("Critical fail to create new translation file %s", locale.toString()), exception);
+            craftEssentials.getLogger().log(Level.FINEST, String.format("Critical fail to create new translation file %s", locale.toString()), exception);
             return;
         }
 
@@ -104,7 +104,7 @@ public class I18n implements II18n {
         try(FileOutputStream fileInputStream = new FileOutputStream(file); Writer writer = new OutputStreamWriter(fileInputStream, StandardCharsets.UTF_8)) {
             properties.store(writer, "");
         } catch (IOException exception) {
-            craftEssentials.getLogger().log(Level.WARNING, String.format("Cannot save new translation file %s", locale.toString()), exception);
+            craftEssentials.getLogger().log(Level.FINEST, String.format("Cannot save new translation file %s", locale.toString()), exception);
             return;
         }
 
@@ -154,9 +154,10 @@ public class I18n implements II18n {
         ResourceBundle resourceBundle = null;
         try {
             resourceBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, locale, new FileResClassLoader(I18n.class.getClassLoader(), craftEssentials), new UTF8PropertiesControl());
-        } catch (MissingResourceException exception) {
-            craftEssentials.getLogger().log(Level.WARNING, "No translations file found in plugin folder for locale: " + locale.toString(), exception);
-            //craftEssentials.getLogger().log(Level.WARNING, "No translations file found in plugin folder for locale: " + locale.toString());
+        } catch (Exception exception) {
+            if (!(exception instanceof MissingResourceException)) {
+                craftEssentials.getLogger().log(Level.WARNING, "No translations file found in plugin folder for locale: " + locale.toString(), exception);
+            }
         }
 
         if(resourceBundle != null) {
@@ -168,7 +169,9 @@ public class I18n implements II18n {
             resourceBundle = ResourceBundle.getBundle(MESSAGES_FILE_NAME, locale, new UTF8PropertiesControl());
         } catch (Exception exception) {
             //Never will happen
-            craftEssentials.getLogger().log(Level.WARNING, "No translations folder found in plugin file for locale: " + locale.toString(), exception);
+            if (!(exception instanceof MissingResourceException)) {
+                craftEssentials.getLogger().log(Level.WARNING, "No translations folder found in plugin file for locale: " + locale.toString(), exception);
+            }
         }
 
         if(resourceBundle != null) {
@@ -255,4 +258,8 @@ public class I18n implements II18n {
         }
     }
 
+    @Override
+    public boolean translationReady(Locale locale) {
+        return locale.equals(Locale.ENGLISH) || resourceBundleMap.containsKey(locale);
+    }
 }

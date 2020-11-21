@@ -7,8 +7,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.diorite.cfg.system.Template;
 import org.diorite.cfg.system.TemplateCreator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pro.paulek.CraftEssentials.commands.Gamemode;
-import pro.paulek.CraftEssentials.data.JobQueue;
 import pro.paulek.CraftEssentials.data.UserCache;
 import pro.paulek.CraftEssentials.listeners.UserListeners;
 import pro.paulek.CraftEssentials.settings.II18n;
@@ -26,12 +27,15 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Locale;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
+
+    static final Logger logger = LoggerFactory.getLogger(CraftEssentials.class);
 
     private Settings settings;
     private II18n i18n;
@@ -39,8 +43,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
     private DataModel dataModel;
     private Database database;
 
-    private JobQueue jobQueue;
-    private Cache<IUser, UUID> userCache;
+    private final Map<Class, Cache> cacheMap = new HashMap<>();
 
     @Override
     public void onLoad() {
@@ -60,10 +63,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         database = initDatabase();
 
         //Init cache
-        jobQueue = new JobQueue(this);
-        jobQueue.init();
-        userCache = new UserCache(this);
-        userCache.init();
+        registerStorages();
 
         //Init commands
         commandManager = new PaperCommandManager(this);
@@ -73,12 +73,26 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
 
         //Init CommandCompletions
-        commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> {
-            return ImmutableList.of("survival", "adventure", "spectator", "creative");
-        });
+        commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> ImmutableList.of("survival", "adventure", "spectator", "creative"));
 
         //Init listeners
         this.getServer().getPluginManager().registerEvents(new UserListeners(this), this);
+    }
+
+    public void registerStorages() {
+        Stream<Class<? extends Cache>> caches = Stream.of(
+                UserCache.class
+        );
+
+        caches.forEach(cacheClazz -> {
+            try {
+                Cache cache = cacheClazz.getConstructor().newInstance();
+                cache.init(this, logger);
+                this.cacheMap.put(cacheClazz, cache);
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
+                logger.error("cannot create and load cache instance {} {}", cacheClazz.getName(), exception);
+            }
+        });
     }
 
     @Override
@@ -125,11 +139,11 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     @Override
     public Cache<IUser, UUID> getUserCache() {
-        return userCache;
+        return cacheMap.get(UserCache.class);
     }
 
     public IUser getUser(UUID uuid) {
-        return userCache.get(uuid);
+        return this.getUserCache().get(uuid);
     }
 
     public IUser getUser(String nick) {
@@ -142,6 +156,10 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     public II18n getI18n() {
         return i18n;
+    }
+
+    public Settings getSettings() {
+        return settings;
     }
 
     public int scheduleSyncDelayedTask(Runnable run) {
@@ -188,10 +206,5 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
         }
 
         return config;
-    }
-
-    @Override
-    public JobQueue getJobs() {
-        return jobQueue;
     }
 }

@@ -1,11 +1,14 @@
 package pro.paulek.api.data;
 
+import org.bukkit.plugin.Plugin;
+import org.slf4j.Logger;
+
 public interface Cache<T, U>{
 
     /**
      * Initialise cache class
      */
-    void init();
+    void init(Plugin plugin, Logger logger);
 
     /**
      * Get a value from cache

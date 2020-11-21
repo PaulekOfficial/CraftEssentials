@@ -62,6 +62,8 @@ public class Settings implements IConfiguration {
             .put("soTimeout", "10")
             .build();
 
+    public boolean useTranslator = false;
+
     public void reload() {
 
     }

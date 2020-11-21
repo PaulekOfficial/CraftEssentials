@@ -1,5 +1,7 @@
 package pro.paulek.CraftEssentials.data;
 
+import org.bukkit.plugin.Plugin;
+import org.slf4j.Logger;
 import pro.paulek.CraftEssentials.data.models.mysql.UserDataModel;
 import pro.paulek.CraftEssentials.user.IUser;
 import pro.paulek.CraftEssentials.ICraftEssentials;
@@ -17,13 +19,13 @@ public class UserCache implements Cache<IUser, UUID> {
     private final Map<UUID, IUser> userMap = new ConcurrentHashMap<>(50);
     private ICraftEssentials plugin;
 
-    public UserCache(ICraftEssentials plugin) {
-        this.plugin = Objects.requireNonNull(plugin);
+    public UserCache() {
     }
 
     @Override
-    public void init() {
-        switch (plugin.getPluginDataModel()) {
+    public void init(Plugin plugin, Logger logger) {
+        this.plugin = (ICraftEssentials) Objects.requireNonNull(plugin);
+        switch (this.plugin.getPluginDataModel()) {
             case MYSQL:
             case FLAT:
             case SQLITE:

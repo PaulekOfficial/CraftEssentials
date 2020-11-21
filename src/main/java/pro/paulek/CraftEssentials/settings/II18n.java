@@ -68,5 +68,12 @@ public interface II18n extends IConfiguration {
      */
     void loadOrTranslate(Locale locale);
 
+    /**
+     * Checks if translation is ready to use
+     * @param locale Locale to check
+     * @return true if translation is ready, false if not
+     */
+    boolean translationReady(Locale locale);
+
 
 }

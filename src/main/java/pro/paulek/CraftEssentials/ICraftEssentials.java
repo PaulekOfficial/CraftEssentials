@@ -1,10 +1,9 @@
 package pro.paulek.CraftEssentials;
 
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import pro.paulek.CraftEssentials.data.JobQueue;
-import pro.paulek.CraftEssentials.settings.I18n;
+import org.bukkit.plugin.Plugin;;
 import pro.paulek.CraftEssentials.settings.II18n;
+import pro.paulek.CraftEssentials.settings.Settings;
 import pro.paulek.CraftEssentials.user.IUser;
 import pro.paulek.api.data.Cache;
 import pro.paulek.api.data.DataModel;
@@ -57,7 +56,7 @@ public interface ICraftEssentials extends Plugin {
      */
     II18n getI18n();
 
-    JobQueue getJobs();
+    Settings getSettings();
 
     Cache<IUser, UUID> getUserCache();
 

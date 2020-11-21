@@ -34,7 +34,7 @@ public class Gamemode extends BaseCommand {
 
     @Default
     @Syntax("[creative/spectator/adventure/survival] <+player>")
-    @Description("Changes gamemode for players")
+    @Description("Changes gamemode for player/s")
     @CommandCompletion("@gamemodes @players")
     public void playerCommand(CommandSender commandSender, String[] args) {
         if(args.length < 1) {
@@ -62,18 +62,19 @@ public class Gamemode extends BaseCommand {
             this.showCommandHelp();
             return;
         }
-        if(!commandSender.hasPermission("craftessentials.gamemode." + targetGamemode.name())) {
-            commandSender.sendMessage("No permissions!");
-            return;
-        }
         Player player = null;
         if(commandSender instanceof Player) {
             player = (Player) commandSender;
         }
+        assert player != null;
         Locale locale = plugin.getUser(player.getUniqueId()).getLocale();
+        if(!commandSender.hasPermission("craftessentials.gamemode." + targetGamemode.name())) {
+            commandSender.sendMessage(plugin.getI18n().format("noPermissions", locale, "craftessentials.gamemode." + targetGamemode.name()));
+            return;
+        }
         if(args.length == 1 && player != null) {
             player.setGameMode(targetGamemode);
-            player.sendMessage(plugin.getI18n().format("gamemodeChanged", locale, plugin.getI18n().translate(targetGamemode.name(), locale)));
+            player.sendMessage(plugin.getI18n().format("gamemodeChangedInfo", locale, plugin.getI18n().translate(targetGamemode.name(), locale)));
             return;
         }
         if(args.length < 2 && player == null) {
@@ -81,33 +82,33 @@ public class Gamemode extends BaseCommand {
             return;
         }
         if(!commandSender.hasPermission("craftessentials.gamemode.others")) {
-            commandSender.sendMessage("No permissions!");
+            commandSender.sendMessage(plugin.getI18n().format("noPermissions", locale, "craftessentials.gamemode.others"));
             return;
         }
         if(args[1].equalsIgnoreCase("all") || args[1].equalsIgnoreCase("*")) {
             if(!commandSender.hasPermission("craftessentials.gamemode.all")) {
-                commandSender.sendMessage("No permissions!");
+                commandSender.sendMessage(plugin.getI18n().format("noPermissions", locale, "craftessentials.gamemode.all"));
                 return;
             }
             for (Player p : Bukkit.getOnlinePlayers()) {
                 p.setGameMode(targetGamemode);
-                p.sendMessage("Your gamemode has changed to " + targetGamemode.name());
+                p.sendMessage(plugin.getI18n().format("gamemodeChangedInfo", locale, plugin.getI18n().translate(targetGamemode.name(), locale)));
             }
-            player.sendMessage("Gamemode changed.");
+            player.sendMessage(plugin.getI18n().format("gamemodeChanged", locale));
             return;
         }
         List<String> players = new ArrayList<>(Arrays.asList(args).subList(1, args.length));
         for(String playerNick : players) {
             Player player1 = Bukkit.getPlayer(playerNick);
             if(player1 == null) {
-                player.sendMessage("Target player " + playerNick + " is offline and gamemode could not be changed.");
+                player.sendMessage(plugin.getI18n().format("gamemodePlayerOffline", locale, playerNick));
                 continue;
             }
             player1.setGameMode(targetGamemode);
             Locale locale1 = plugin.getUser(player1.getUniqueId()).getLocale();
-            player1.sendMessage(plugin.getI18n().format("gamemodeChanged", locale1, plugin.getI18n().translate(targetGamemode.name(), locale1)));
+            player1.sendMessage(plugin.getI18n().format("gamemodeChangedInfo", locale1, plugin.getI18n().translate(targetGamemode.name(), locale1)));
         }
-        player.sendMessage("Gamemode changed.");
+        player.sendMessage(plugin.getI18n().format("gamemodeChanged", locale));
     }
 
 }

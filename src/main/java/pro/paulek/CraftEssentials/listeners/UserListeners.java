@@ -8,7 +8,6 @@ import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerLoginEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import pro.paulek.CraftEssentials.ICraftEssentials;
-import pro.paulek.CraftEssentials.objects.Job;
 import pro.paulek.CraftEssentials.user.IUser;
 import pro.paulek.CraftEssentials.user.User;
 import pro.paulek.CraftEssentials.util.LocationAndLocale;
@@ -43,9 +42,12 @@ public class UserListeners implements Listener {
         }
         IUser user = new User(uuid, Locale.ENGLISH);
         plugin.getUserCache().add(uuid, user);
+        //Locale settings is send after join event
         Bukkit.getScheduler().runTaskLater(plugin, run -> {
             user.setLocale(LocationAndLocale.localeFromTag(event.getPlayer().getLocale()));
-            plugin.getI18n().loadOrTranslate(user.getLocale());
+            if (!plugin.getSettings().useTranslator) {
+                plugin.getI18n().loadOrTranslate(user.getLocale());
+            }
         }, 100);
     }
 
