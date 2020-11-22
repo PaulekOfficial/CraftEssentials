@@ -17,7 +17,7 @@ import java.util.Map;
 @CfgComment(" §~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~§ #")
 @CfgComment("###########################################################")
 @CfgComment("Jezeli chcesz uzyc znakow specjalnych w tym configu, jak znaki specjalne - TEN PLIK MUSI ZOSTAC ZAPISANY W FORMACIE UTF-8")
-public class Settings implements IConfiguration {
+public class Settings {
 
     @CfgComment("###########################################################")
     @CfgComment(" §~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~§ #")
@@ -62,10 +62,34 @@ public class Settings implements IConfiguration {
             .put("soTimeout", "10")
             .build();
 
+    @CfgComment("###########################################################")
+    @CfgComment(" §~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~§ #")
+    @CfgComment(" |                       Locale                         | #")
+    @CfgComment(" §~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~§ #")
+    @CfgComment("###########################################################")
+
+    @CfgComment("Czy uzywac trybu jezykow miedzy narodowych")
+    @CfgName("i18n")
+    public boolean i18n = false;
+
+    @CfgComment("Domyslny jezyk pluginu")
+    @CfgName("default-locale")
+    public String defaultLocale = "en";
+
+    @CfgComment("Czy tlumaczyc w czasie rzeczywistym pliki z wiadomosciami")
+    @CfgName("use-translator")
     public boolean useTranslator = false;
 
-    public void reload() {
+    @CfgComment("Typ uslugi Api translatora, uzywany do tlumaczania plikow jezykowych")
+    @CfgName("translator-api")
+    public String translatorApi = "azure";
 
-    }
+    @CfgComment("Url endpointu api tlumacza")
+    @CfgName("translator-api")
+    public String translatorEndpointApi = "https://api.cognitive.microsofttranslator.com";
+
+    @CfgComment("Klucz Api translatora uzywany do logowania do uslugi")
+    @CfgName("translator-key")
+    public String translatorKey = "azure-key";
 
 }

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 public class I18n implements II18n {
 
-    private final Translator translator = new AzureTranslator("https://api.cognitive.microsofttranslator.com", "f30afa09c06a42609c9c82aeb8eba77f");
+    private final Translator translator;
 
     private final static String MESSAGES_FILE_NAME = "messages";
     private static final Pattern NO_DOUBLE_MARK = Pattern.compile("''");
@@ -32,12 +32,21 @@ public class I18n implements II18n {
 
     private final List<Locale> languagesInTranslations = new ArrayList<>();
 
-    public I18n(ICraftEssentials craftEssentials) {
+    public I18n(ICraftEssentials craftEssentials, Translator translator) {
         this.craftEssentials = Objects.requireNonNull(craftEssentials);
+        this.translator = Objects.requireNonNull(translator);
     }
 
     @Override
     public String translate(String key, Locale locale) {
+        if (!craftEssentials.getSettings().i18n) {
+            try {
+                return fixColor(resourceBundleMap.get(locale).getString(key));
+            } catch (MissingResourceException exception) {
+                craftEssentials.getLogger().log(Level.WARNING, String.format("Missing translation key \"%s\" in translation file %s", exception.getKey(), locale.toString()), exception);
+                return "";
+            }
+        }
         try {
             try {
                 if(!resourceBundleMap.containsKey(locale)) {

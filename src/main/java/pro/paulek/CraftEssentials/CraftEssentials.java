@@ -4,6 +4,8 @@ import co.aikar.commands.PaperCommandManager;
 import com.google.common.collect.ImmutableList;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.diorite.cfg.system.Template;
 import org.diorite.cfg.system.TemplateCreator;
@@ -13,6 +15,8 @@ import pro.paulek.CraftEssentials.commands.Gamemode;
 import pro.paulek.CraftEssentials.data.UserCache;
 import pro.paulek.CraftEssentials.listeners.UserListeners;
 import pro.paulek.CraftEssentials.settings.II18n;
+import pro.paulek.CraftEssentials.util.AzureTranslator;
+import pro.paulek.CraftEssentials.util.Translator;
 import pro.paulek.api.data.Cache;
 import pro.paulek.CraftEssentials.settings.I18n;
 import pro.paulek.CraftEssentials.settings.Settings;
@@ -31,6 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
@@ -39,11 +45,17 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     private Settings settings;
     private II18n i18n;
+    private Translator translator;
+
     private PaperCommandManager commandManager;
     private DataModel dataModel;
     private Database database;
 
-    private final Map<Class, Cache> cacheMap = new HashMap<>();
+    private final ExecutorService executorService = Executors.newCachedThreadPool();
+
+    private final Map<Class, Cache> cachesMap = new HashMap<>(128);
+
+    private final Map<Class, Listener> listenersMap = new HashMap<>(128);
 
     @Override
     public void onLoad() {
@@ -54,26 +66,23 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
     public void onEnable() {
         //Init config
         settings = initSettings();
+        this.reloadTranslator();
 
         //Init i18n
-        i18n = new I18n(this);
-        i18n.loadLocale("en");
+        i18n = new I18n(this, translator);
+        i18n.loadLocale(settings.defaultLocale);
 
         //Init database
-        database = initDatabase();
+        database = this.initDatabase();
 
         //Init cache
-        registerStorages();
+        this.registerStorages();
 
         //Init commands
         commandManager = new PaperCommandManager(this);
         commandManager.usePerIssuerLocale(true);
         commandManager.enableUnstableAPI("help");
-        commandManager.registerCommand(new Gamemode(this));
-
-
-        //Init CommandCompletions
-        commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> ImmutableList.of("survival", "adventure", "spectator", "creative"));
+        this.registerCommands();
 
         //Init listeners
         this.getServer().getPluginManager().registerEvents(new UserListeners(this), this);
@@ -88,11 +97,48 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
             try {
                 Cache cache = cacheClazz.getConstructor().newInstance();
                 cache.init(this, logger);
-                this.cacheMap.put(cacheClazz, cache);
+                this.cachesMap.put(cacheClazz, cache);
             } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
                 logger.error("cannot create and load cache instance {} {}", cacheClazz.getName(), exception);
             }
         });
+    }
+
+    public void registerListeners() {
+        Stream<Class<? extends Listener>> listeners = Stream.of(
+                UserListeners.class
+        );
+
+        listeners.forEach(listenerClazz -> {
+            try {
+                Listener listener = listenerClazz.getConstructor(ICraftEssentials.class, Logger.class).newInstance(this, logger);
+                this.getServer().getPluginManager().registerEvents(listener, this);
+                this.listenersMap.put(listenerClazz, listener);
+            } catch (IllegalAccessException | InstantiationException | NoSuchMethodException | InvocationTargetException exception) {
+                logger.error("cannot create and load cache instance {} {}", listenerClazz.getName(), exception);
+            }
+        });
+    }
+
+    public void registerCommands() {
+        commandManager.registerCommand(new Gamemode(this));
+
+
+        //Init CommandCompletions
+        commandManager.getCommandCompletions().registerCompletion("gamemodes", c -> ImmutableList.of("survival", "adventure", "spectator", "creative"));
+    }
+
+    public void reloadTranslator() {
+        if (!settings.useTranslator || !settings.i18n) {
+            return;
+        }
+        switch (settings.translatorApi.toLowerCase()) {
+            case "microsoft":
+                new AzureTranslator(settings.translatorEndpointApi, settings.translatorKey);
+                break;
+            case "google":
+                throw new UnsupportedOperationException("Not implemented yet.");
+        }
     }
 
     @Override
@@ -101,7 +147,17 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
     }
 
     public void reload() {
+        this.initSettings();
 
+        this.database = this.initDatabase();
+
+        this.reloadTranslator();
+
+        HandlerList.unregisterAll(this);
+        this.registerListeners();
+
+        this.commandManager.unregisterCommands();
+        this.registerCommands();
     }
 
     @Override
@@ -139,7 +195,7 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     @Override
     public Cache<IUser, UUID> getUserCache() {
-        return cacheMap.get(UserCache.class);
+        return cachesMap.get(UserCache.class);
     }
 
     public IUser getUser(UUID uuid) {
@@ -160,6 +216,11 @@ public class CraftEssentials extends JavaPlugin implements ICraftEssentials {
 
     public Settings getSettings() {
         return settings;
+    }
+
+    @Override
+    public ExecutorService getExecutorService() {
+        return executorService;
     }
 
     public int scheduleSyncDelayedTask(Runnable run) {

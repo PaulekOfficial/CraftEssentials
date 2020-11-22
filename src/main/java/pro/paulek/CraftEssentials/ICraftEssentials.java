@@ -10,6 +10,7 @@ import pro.paulek.api.data.DataModel;
 import pro.paulek.api.database.Database;
 
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 
 public interface ICraftEssentials extends Plugin {
 
@@ -57,6 +58,8 @@ public interface ICraftEssentials extends Plugin {
     II18n getI18n();
 
     Settings getSettings();
+
+    ExecutorService getExecutorService();
 
     Cache<IUser, UUID> getUserCache();
 
